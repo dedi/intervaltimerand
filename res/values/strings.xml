@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Periodic Timer</string>
+    
+    <!-- Messages -->
+    <string name="exit_confirmation_message">Are you sure you want to exit?
+    </string>
+    <string name="bad_int_pref_message">Expected a number between %1$d and %2$d.
+    Value not saved.</string>
+    <string name="timer_title_message">Doing %1$s intervals of %2$s 
+    seconds each (with %3$s seconds preroll)</string>
+    
+    <!-- State messages -->
+    <string name="state_ready">Ready</string>
+    <string name="state_running_countdown">Running (currently in countdown)</string>
+    <string name="state_running_interval">Running (currently in interval %1$s)</string>
+    <string name="state_paused">Paused</string>
+    
+    <!-- Preferences -->
+    <string name="pref_num_intervals_title">Number of Intervals:</string>
+    <string name="pref_num_intervals_summary">Number of Intervals to do</string>
+    <string name="pref_num_intervals_key">com.xomzom.androidstuff.timerapp.num_intervals</string>
+    <string name="pref_num_intervals_default">5</string>
+    <string name="pref_interval_length_title">Interval Length (seconds):</string>
+    <string name="pref_interval_length_summary">The Length of Each Interval in Seconds</string>
+    <string name="pref_interval_length_key">com.xomzom.androidstuff.timerapp.interval_length</string>
+    <string name="pref_interval_length_default">60</string>
+    <string name="pref_countdown_title">Countdown (seconds):</string>
+    <string name="pref_countdown_summary">The Count-Down Time in Seconds</string>
+    <string name="pref_countdown_key">com.xomzom.androidstuff.timerapp.countdown</string>
+    <string name="pref_countdown_default">7</string>
+
+    <string name="pref_ringtone_title">Timeout Ringtone</string>
+    <string name="pref_ringtone_summary">Ringtone to play when interval ends</string>
+    <string name="pref_ringtone_key">com.xomzom.androidstuff.timerapp.ringtone</string>
+    <string name="pref_nodim_title">Cancel Screen Dimming</string>
+    <string name="pref_nodim_summary">Cancel dimming of the screen while timer is running.</string>
+    <string name="pref_nodim_key">com.xomzom.androidstuff.timerapp.nodim</string>
+
+    <!-- Menu items. The start, stop, pause, and resume titles double as the button 
+    captions -->
+    <string name="menu_start_title">Start Timer</string>
+    <string name="menu_stop_title">Stop Timer</string>
+    <string name="menu_pause_title">Pause Timer</string>
+    <string name="menu_resume_title">Resume Timer</string>
+    <string name="menu_settings_title">Settings</string>
+    <string name="menu_exit_title">Exit</string>
+</resources>

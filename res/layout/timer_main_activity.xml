@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="fill_parent"
+    android:layout_height="fill_parent">
+
+    <TextView
+        android:id="@+id/interval_timer_title"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"/>
+
+    <Chronometer
+        android:id="@+id/chronometer"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_centerHorizontal="true"
+        android:layout_centerVertical="true"
+        android:layout_centerInParent="true"
+        android:textScaleX="3"
+        android:textColor="#ffe0e0"
+        android:text="00:00"    
+        android:layout_below="@id/interval_timer_title"/>
+
+    <TextView
+        android:id="@+id/interval_timer_state"
+        android:layout_width="fill_parent"
+        android:text="@string/state_ready"
+        android:layout_centerHorizontal="true"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/chronometer"/>
+
+    <Button
+        android:id="@+id/resume_button"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="10dip"
+        android:layout_alignParentBottom="true"
+        android:layout_alignParentRight="true"
+        android:text="@string/menu_resume_title"
+        android:visibility="gone"
+        />
+
+    <Button
+        android:id="@+id/pause_button"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="10dip"
+        android:layout_alignRight="@id/resume_button"
+        android:layout_alignParentBottom="true"
+        android:text="@string/menu_pause_title"
+        android:visibility="gone"
+        />
+
+    <Button
+        android:id="@+id/stop_button"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="10dip"
+        android:layout_alignRight="@id/pause_button"
+        android:layout_alignParentBottom="true"
+        android:text="@string/menu_stop_title"
+        android:visibility="gone"
+        />
+
+    <Button
+        android:id="@+id/start_button"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="10dip"
+        android:layout_alignRight="@id/pause_button"
+        android:layout_alignParentBottom="true"
+        android:text="@string/menu_start_title"
+        android:visibility="visible"
+        />
+/>
+
+</RelativeLayout>
