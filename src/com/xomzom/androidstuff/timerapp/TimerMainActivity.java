@@ -4,6 +4,7 @@ import android.app.Activity;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.SharedPreferences.OnSharedPreferenceChangeListener;
+import android.media.AudioManager;
 import android.media.Ringtone;
 import android.media.RingtoneManager;
 import android.net.Uri;
@@ -66,11 +67,6 @@ public class TimerMainActivity extends Activity implements
      */
     private int m_countdown;
     
-    /**
-     * The notification tone URI.
-     */
-    private Uri m_notificationURI;
-
     /**
      * The current interval number.
      */
@@ -222,8 +218,9 @@ public class TimerMainActivity extends Activity implements
         String notificationAsString = 
             prefs.getString(getString(R.string.pref_ringtone_key),
                             "DEFAULT_NOTIFICATION_URI");
-        m_notificationURI = Uri.parse(notificationAsString);
-        m_ringtone = RingtoneManager.getRingtone(this, m_notificationURI);
+        Uri notificationURI = Uri.parse(notificationAsString);
+        m_ringtone = RingtoneManager.getRingtone(this, notificationURI);
+        m_ringtone.setStreamType(AudioManager.STREAM_ALARM);
 
         m_preventLocking = 
             prefs.getBoolean(getString(R.string.pref_nolock_key), false);
