@@ -130,11 +130,21 @@ public class TimerMainActivity extends Activity implements
      * The state textview.
      */
     private TextView m_stateView;
+    
+    /**
+     * The 'prevent screen locking' flag.
+     */
+    private boolean m_preventLocking;
 
     /**
      * The ringtone to use.
      */
     Ringtone m_ringtone;
+    
+    /**
+     * The main view.
+     */
+    View m_mainView;
 
     //
     // Operations.
@@ -150,6 +160,7 @@ public class TimerMainActivity extends Activity implements
         super.onCreate(savedInstanceState);
 
         setContentView(R.layout.timer_main_activity);
+        m_mainView = findViewById(R.id.main_view);
         
         initWidgets();
         
@@ -157,8 +168,8 @@ public class TimerMainActivity extends Activity implements
             PreferenceManager.getDefaultSharedPreferences(getBaseContext());
         prefs.registerOnSharedPreferenceChangeListener(this);
 
-        readIntervalsFromPrefs();
-        updateTitleAndState();
+        updatePrefs();
+        updateScreenForState();
         m_currentInterval = 0;
     }
 
@@ -191,10 +202,9 @@ public class TimerMainActivity extends Activity implements
     }
 
     /**
-     * Read the interval length, number of intervals and countdown from the
-     * preferences.
+     * Update user-modifiable preferences.
      */
-    private void readIntervalsFromPrefs()
+    private void updatePrefs()
     {
         m_numIntervals = getIntPrefByKeyID(R.string.pref_num_intervals_key,
                 R.string.pref_num_intervals_default);
@@ -214,24 +224,31 @@ public class TimerMainActivity extends Activity implements
                             "DEFAULT_NOTIFICATION_URI");
         m_notificationURI = Uri.parse(notificationAsString);
         m_ringtone = RingtoneManager.getRingtone(this, m_notificationURI);
+
+        m_preventLocking = 
+            prefs.getBoolean(getString(R.string.pref_nolock_key), false);
+        if (m_state == TimerState.RUNNING)
+            m_mainView.setKeepScreenOn(m_preventLocking);
     }
 
     /**
-     * Update the title and state according to the current state and
-     * preferences.
+     * Update the title, stateview and screen locking according to the current 
+     * state and preferences.
      */
-    private void updateTitleAndState()
+    private void updateScreenForState()
     {
         String title = getString(R.string.timer_title_message,
                 m_numIntervals, m_intervalLength, m_countdown);
         m_titleView.setText(title);
         String stateMsg = "";
+        m_mainView.setKeepScreenOn(false);
         if (m_state == TimerState.READY)
             stateMsg = getString(R.string.state_ready);
         else if (m_state == TimerState.PAUSED)
             stateMsg = getString(R.string.state_paused);
         else if (m_state == TimerState.RUNNING)
-        {  
+        {
+            m_mainView.setKeepScreenOn(m_preventLocking);
             if (m_currentInterval == 0)
                 stateMsg = getString(R.string.state_running_countdown);
             else
@@ -254,8 +271,8 @@ public class TimerMainActivity extends Activity implements
         // Guess it's OK to do this even while we're running... Although of
         // course we might have already passed the interval length, or the
         // number of intervals.
-        readIntervalsFromPrefs();
-        updateTitleAndState();
+        updatePrefs();
+        updateScreenForState();
         
     }
 
@@ -454,7 +471,7 @@ public class TimerMainActivity extends Activity implements
         assert(m_state == TimerState.RUNNING);
         m_state = TimerState.PAUSED;
         setWidgetsForPauseState();
-        updateTitleAndState();
+        updateScreenForState();
 
         // TODO: actually pause.
     }
@@ -467,7 +484,7 @@ public class TimerMainActivity extends Activity implements
         assert(m_state == TimerState.PAUSED);
         setWidgetsForResumeState();
         m_state = TimerState.RUNNING;
-        updateTitleAndState();
+        updateScreenForState();
         
         // TODO: actually resume.
     }
@@ -481,7 +498,7 @@ public class TimerMainActivity extends Activity implements
         m_state = TimerState.READY;
         setWidgetsForStopState();
         m_chronometer.stop();
-        updateTitleAndState();
+        updateScreenForState();
     }
 
     /**
@@ -525,7 +542,7 @@ public class TimerMainActivity extends Activity implements
      */
     private void startNextInterval()
     {
-        updateTitleAndState();
+        updateScreenForState();
 
         long currentTimeMillis = SystemClock.elapsedRealtime();
         m_chronometer.setBase(currentTimeMillis);

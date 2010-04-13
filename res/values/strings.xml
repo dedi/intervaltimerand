@@ -33,9 +33,10 @@
     <string name="pref_ringtone_title">Timeout Ringtone</string>
     <string name="pref_ringtone_summary">Ringtone to play when interval ends</string>
     <string name="pref_ringtone_key">com.xomzom.androidstuff.timerapp.ringtone</string>
-    <string name="pref_nodim_title">Cancel Screen Dimming</string>
-    <string name="pref_nodim_summary">Cancel dimming of the screen while timer is running.</string>
-    <string name="pref_nodim_key">com.xomzom.androidstuff.timerapp.nodim</string>
+
+    <string name="pref_nolock_title">Prevent Screen Locking</string>
+    <string name="pref_nolock_summary">Cancel dimming of the screen while timer is running.</string>
+    <string name="pref_nolock_key">com.xomzom.androidstuff.timerapp.nodim</string>
 
     <!-- Menu items. The start, stop, pause, and resume titles double as the button 
     captions -->
