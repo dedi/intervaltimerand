@@ -9,17 +9,15 @@ import android.media.Ringtone;
 import android.media.RingtoneManager;
 import android.net.Uri;
 import android.os.Bundle;
-import android.os.SystemClock;
 import android.preference.PreferenceManager;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.Button;
-import android.widget.Chronometer;
 import android.widget.TextView;
-import android.widget.Chronometer.OnChronometerTickListener;
 
 /**
  * The timer activity of the timer application.
@@ -27,21 +25,22 @@ import android.widget.Chronometer.OnChronometerTickListener;
  * 
  * @author dedi
  */
-public class TimerMainActivity extends Activity implements
-        OnChronometerTickListener, OnSharedPreferenceChangeListener
+public class TimerMainActivity extends Activity 
+    implements OnSharedPreferenceChangeListener
 {
     //
     // Constants.
     //
     
     /**
-     * The various timer states. Pause is not supported yet, though.
+     * The various timer states.
      */
     enum TimerState {
         READY,   // Ready to run. Valid next state: Running.
         RUNNING, // Running. Valid next steps: Ready (if stopped), paused
         PAUSED,  // Paused. Valid next steps: Running, Ready (if stopped).
     }
+
 
     //
     // Members.
@@ -73,9 +72,9 @@ public class TimerMainActivity extends Activity implements
     private int m_currentInterval;
 
     /**
-     * A reference to the chronometer object.
+     * A reference to the time view.
      */
-    private Chronometer m_chronometer;
+    private TextView m_chronometer;
     
     /**
      * The 'start timer' menu item.
@@ -135,25 +134,31 @@ public class TimerMainActivity extends Activity implements
     /**
      * The ringtone to use.
      */
-    Ringtone m_ringtone;
+    private Ringtone m_ringtone;
+    
+    /**
+     * The actual timer object.
+     */
+    private PausableTimer m_timer;
     
     /**
      * The main view.
      */
-    View m_mainView;
+    private View m_mainView;
 
     //
     // Operations.
     //
 
     /**
-     * Notification called when the activity is created - set the sequence view,
+     * An event raised when the activity is created - set the sequence view,
      * capture events, etc.
      */
     @Override
     public void onCreate(Bundle savedInstanceState)
     {
         super.onCreate(savedInstanceState);
+        m_timer = new PausableTimer(this);
 
         setContentView(R.layout.timer_main_activity);
         m_mainView = findViewById(R.id.main_view);
@@ -168,14 +173,27 @@ public class TimerMainActivity extends Activity implements
         updateScreenForState();
         m_currentInterval = 0;
     }
-
+    
+    /**
+     * An event raised when the activity needs to pause. Pause the timer.
+     * Note that while pausing the activity pauses the timer, resuming it
+     * does not automatically resume the timer. It seems to make more sense
+     * for the user to resume the timer manually.
+     * @see android.app.Activity#onPause()
+     */
+    @Override
+    protected void onPause()
+    {
+        super.onPause();
+        onPauseRequest();
+    }
+    
     /**
      * Initialize the view widgets.
      */
     private void initWidgets()
     {
-        m_chronometer = (Chronometer)findViewById(R.id.chronometer);
-        m_chronometer.setOnChronometerTickListener(this);
+        m_chronometer = (TextView)findViewById(R.id.time_view);
         m_titleView = (TextView)findViewById(R.id.interval_timer_title);
         m_stateView = (TextView)findViewById(R.id.interval_timer_state);
 
@@ -220,6 +238,14 @@ public class TimerMainActivity extends Activity implements
                             "DEFAULT_NOTIFICATION_URI");
         Uri notificationURI = Uri.parse(notificationAsString);
         m_ringtone = RingtoneManager.getRingtone(this, notificationURI);
+        if (m_ringtone == null)
+        {
+            Log.e(this.getClass().toString(), 
+                  "Couldn't load ringtone. Loading something.");
+            notificationURI = RingtoneManager.getValidRingtoneUri(this);
+            m_ringtone = RingtoneManager.getRingtone(this, notificationURI);
+        }
+
         m_ringtone.setStreamType(AudioManager.STREAM_ALARM);
 
         m_preventLocking = 
@@ -302,16 +328,16 @@ public class TimerMainActivity extends Activity implements
     {
         switch (item.getItemId()) {
         case R.id.menu_start:
-            startTimer();
+            onStartRequest();
             return true;
         case R.id.menu_pause:
-            pauseTimer();
+            onPauseRequest();
             return true;
         case R.id.menu_resume:
-            resumeTimer();
+            onResumeRequest();
             return true;
         case R.id.menu_stop:
-            stopTimer();
+            onLastIntervalFinished();
             return true;
         case R.id.menu_settings:
             startSettingsActivity();
@@ -331,16 +357,16 @@ public class TimerMainActivity extends Activity implements
     {
         switch (button.getId()) {
         case R.id.start_button:
-            startTimer();
+            onStartRequest();
             return;
         case R.id.pause_button:
-            pauseTimer();
+            onPauseRequest();
             return;
         case R.id.resume_button:
-            resumeTimer();
+            onResumeRequest();
             return;
         case R.id.stop_button:
-            stopTimer();
+            onLastIntervalFinished();
             return;
         }
     }
@@ -355,12 +381,12 @@ public class TimerMainActivity extends Activity implements
         {
             m_startMenuItem.setVisible(false);
             m_stopMenuItem.setVisible(true);
-            m_pauseMenuItem.setVisible(false); // Because it's not working yet.
+            m_pauseMenuItem.setVisible(true);
             m_resumeMenuItem.setVisible(false);
         }
         m_startButton.setVisibility(Button.GONE);
         m_stopButton.setVisibility(Button.VISIBLE);
-        m_pauseButton.setVisibility(Button.GONE);
+        m_pauseButton.setVisibility(Button.VISIBLE);
         m_resumeButton.setVisibility(Button.GONE);
         
     }
@@ -444,9 +470,9 @@ public class TimerMainActivity extends Activity implements
     }
 
     /**
-     * Start the timer.
+     * The 'start' button was pressed.
      */
-    private void startTimer()
+    private void onStartRequest()
     {
         assert(m_state == TimerState.READY);
         setWidgetsForStartState();
@@ -461,40 +487,26 @@ public class TimerMainActivity extends Activity implements
     }
 
     /**
-     * Pause the timer (not implemented yet).
+     * The 'pause' button was pressed.
      */
-    private void pauseTimer()
+    private void onPauseRequest()
     {
         assert(m_state == TimerState.RUNNING);
         m_state = TimerState.PAUSED;
+        m_timer.pause();
         setWidgetsForPauseState();
         updateScreenForState();
-
-        // TODO: actually pause.
     }
 
     /**
-     * Resume a paused timer (not implemented yet).
+     * The 'resume' button was pressed.
      */
-    private void resumeTimer()
+    private void onResumeRequest()
     {
         assert(m_state == TimerState.PAUSED);
         setWidgetsForResumeState();
         m_state = TimerState.RUNNING;
-        updateScreenForState();
-        
-        // TODO: actually resume.
-    }
-
-    /**
-     * Stop a running timer.
-     */
-    private void stopTimer()
-    {
-        assert(m_state == TimerState.RUNNING || m_state == TimerState.PAUSED);
-        m_state = TimerState.READY;
-        setWidgetsForStopState();
-        m_chronometer.stop();
+        m_timer.resume();
         updateScreenForState();
     }
 
@@ -506,44 +518,67 @@ public class TimerMainActivity extends Activity implements
         Intent intent = new Intent(this, SettingsActivity.class);
         startActivity(intent);
     }
+    
+    /**
+     * A timer tick event.
+     */
+    public void onTimerTick(int secondsTillFinish)
+    {
+        // TODO: Format this.
+        String secondsString = String.valueOf(secondsTillFinish);
+        m_chronometer.setText(secondsString);
+    }
 
     /**
-     * A chronometer tick event.
+     * An interval has finished.
      */
-    @Override
-    public void onChronometerTick(Chronometer a_chronometer)
+    protected void onIntervalFinished()
     {
-        long currentTimeMillis = SystemClock.elapsedRealtime();
-        long elapsedTime = (currentTimeMillis - m_chronometer.getBase()) / 1000L;
-        int targetTime = (m_currentInterval == 0) ? m_countdown
-                : m_intervalLength;
-        if (elapsedTime < targetTime)
-        {
-            return;
-        }
-
-        m_chronometer.stop();
+        m_ringtone.play();
+        m_timer.stop();
         m_currentInterval++;
         if (m_currentInterval <= m_numIntervals)
             startNextInterval();
         else
         {
-            stopTimer();
+            onLastIntervalFinished();
         }
 
-        m_ringtone.play();
     }
 
     /**
+     * The timer finished or was stopped.
+     */
+    private void onLastIntervalFinished()
+    {
+        assert(m_state == TimerState.RUNNING || m_state == TimerState.PAUSED);
+        m_timer.stop();
+        m_state = TimerState.READY;
+        setWidgetsForStopState();
+        updateScreenForState();
+    }
+    
+   /**
      * Start the next interval.
      */
     private void startNextInterval()
     {
+        int thisIntervalLength =
+            (m_currentInterval == 0 ? m_countdown : m_intervalLength);
         updateScreenForState();
-
-        long currentTimeMillis = SystemClock.elapsedRealtime();
-        m_chronometer.setBase(currentTimeMillis);
-        m_chronometer.start();
+        startTimer(thisIntervalLength);
+    }
+    
+    /**
+     * Start the timer, also displaying the number of seconds in the chronometer
+     * view.
+     * @param seconds
+     */
+    private void startTimer(int seconds)
+    {
+        // Fake a first tick to display the number of seconds left right now.
+        onTimerTick(seconds);
+        m_timer.start(seconds);
     }
 
     /**

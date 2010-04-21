@@ -1,7 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="fill_parent"
     android:layout_height="fill_parent"
+    android:orientation="vertical"
     android:id="@+id/main_view">
 
     <TextView
@@ -9,26 +10,33 @@
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"/>
 
-    <Chronometer
-        android:id="@+id/chronometer"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
+    <TextView
+        android:id="@+id/time_view"
+        android:layout_width="fill_parent"
+        android:layout_height="fill_parent"
         android:layout_centerHorizontal="true"
         android:layout_centerVertical="true"
         android:layout_centerInParent="true"
         android:textScaleX="3"
         android:textColor="#ffe0e0"
-        android:text="00:00"    
-        android:layout_below="@id/interval_timer_title"/>
+        android:text="00"    
+        android:layout_weight="1"/>
 
     <TextView
         android:id="@+id/interval_timer_state"
         android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
         android:text="@string/state_ready"
         android:layout_centerHorizontal="true"
-        android:layout_height="wrap_content"
-        android:layout_below="@id/chronometer"/>
-
+        />
+    <LinearLayout
+     android:orientation="horizontal"
+     android:id="@+id/button_view"
+     android:gravity="right"
+     android:layout_width="fill_parent"
+     android:layout_height="wrap_content"
+     >
+     
     <Button
         android:id="@+id/resume_button"
         android:layout_width="wrap_content"
@@ -72,6 +80,7 @@
         android:text="@string/menu_start_title"
         android:visibility="visible"
         />
-/>
+    </LinearLayout>
 
-</RelativeLayout>
+
+</LinearLayout>
