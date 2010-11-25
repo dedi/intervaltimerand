@@ -22,16 +22,16 @@ import android.widget.TextView;
 /**
  * The timer activity of the timer application.
  * TODO: Figure life-cycle, and make sure cleanup is done in the right place.
- * 
+ *
  * @author dedi
  */
-public class TimerMainActivity extends Activity 
+public class TimerMainActivity extends Activity
     implements OnSharedPreferenceChangeListener
 {
     //
     // Constants.
     //
-    
+
     /**
      * The various timer states.
      */
@@ -45,7 +45,7 @@ public class TimerMainActivity extends Activity
     //
     // Members.
     //
-    
+
     /**
      * The current timer state.
      */
@@ -65,7 +65,7 @@ public class TimerMainActivity extends Activity
      * The countdown before the first interval.
      */
     private int m_countdown;
-    
+
     /**
      * The current interval number.
      */
@@ -75,7 +75,7 @@ public class TimerMainActivity extends Activity
      * A reference to the time view.
      */
     private TextView m_chronometer;
-    
+
     /**
      * The 'start timer' menu item.
      */
@@ -95,7 +95,7 @@ public class TimerMainActivity extends Activity
      * The 'stop timer' menu item.
      */
     private MenuItem m_stopMenuItem;
-    
+
     /**
      * The 'start timer' button.
      */
@@ -115,7 +115,7 @@ public class TimerMainActivity extends Activity
      * The 'stop timer' button.
      */
     private Button m_stopButton;
-    
+
     /**
      * The title textview.
      */
@@ -125,7 +125,7 @@ public class TimerMainActivity extends Activity
      * The state textview.
      */
     private TextView m_stateView;
-    
+
     /**
      * The 'prevent screen locking' flag.
      */
@@ -135,12 +135,12 @@ public class TimerMainActivity extends Activity
      * The ringtone to use.
      */
     private Ringtone m_ringtone;
-    
+
     /**
      * The actual timer object.
      */
     private PausableTimer m_timer;
-    
+
     /**
      * The main view.
      */
@@ -162,10 +162,10 @@ public class TimerMainActivity extends Activity
 
         setContentView(R.layout.timer_main_activity);
         m_mainView = findViewById(R.id.main_view);
-        
+
         initWidgets();
-        
-        SharedPreferences prefs = 
+
+        SharedPreferences prefs =
             PreferenceManager.getDefaultSharedPreferences(getBaseContext());
         prefs.registerOnSharedPreferenceChangeListener(this);
 
@@ -173,7 +173,7 @@ public class TimerMainActivity extends Activity
         updateScreenForState();
         m_currentInterval = 0;
     }
-    
+
     /**
      * An event raised when the activity needs to pause. Pause the timer.
      * Note that while pausing the activity pauses the timer, resuming it
@@ -185,9 +185,10 @@ public class TimerMainActivity extends Activity
     protected void onPause()
     {
         super.onPause();
-        onPauseRequest();
+        if (m_state == TimerState.RUNNING)
+            onPauseRequest();
     }
-    
+
     /**
      * Initialize the view widgets.
      */
@@ -229,18 +230,18 @@ public class TimerMainActivity extends Activity
         m_countdown = getIntPrefByKeyID(R.string.pref_countdown_key,
                 R.string.pref_countdown_default);
         assert(m_intervalLength >= 0);
-        
-        SharedPreferences prefs = 
+
+        SharedPreferences prefs =
             PreferenceManager.getDefaultSharedPreferences(getBaseContext());
 
-        String notificationAsString = 
+        String notificationAsString =
             prefs.getString(getString(R.string.pref_ringtone_key),
                             "DEFAULT_NOTIFICATION_URI");
         Uri notificationURI = Uri.parse(notificationAsString);
         m_ringtone = RingtoneManager.getRingtone(this, notificationURI);
         if (m_ringtone == null)
         {
-            Log.e(this.getClass().toString(), 
+            Log.e(this.getClass().toString(),
                   "Couldn't load ringtone. Loading something.");
             notificationURI = RingtoneManager.getValidRingtoneUri(this);
             m_ringtone = RingtoneManager.getRingtone(this, notificationURI);
@@ -248,14 +249,14 @@ public class TimerMainActivity extends Activity
 
         m_ringtone.setStreamType(AudioManager.STREAM_ALARM);
 
-        m_preventLocking = 
+        m_preventLocking =
             prefs.getBoolean(getString(R.string.pref_nolock_key), false);
         if (m_state == TimerState.RUNNING)
             m_mainView.setKeepScreenOn(m_preventLocking);
     }
 
     /**
-     * Update the title, stateview and screen locking according to the current 
+     * Update the title, stateview and screen locking according to the current
      * state and preferences.
      */
     private void updateScreenForState()
@@ -276,8 +277,8 @@ public class TimerMainActivity extends Activity
                 stateMsg = getString(R.string.state_running_countdown);
             else
             {
-                stateMsg = 
-                    getString(R.string.state_running_interval, 
+                stateMsg =
+                    getString(R.string.state_running_interval,
                         m_currentInterval);
             }
         }
@@ -296,12 +297,12 @@ public class TimerMainActivity extends Activity
         // number of intervals.
         updatePrefs();
         updateScreenForState();
-        
+
     }
 
     /**
      * Create the options menu.
-     * 
+     *
      * @see android.app.Activity#onCreateOptionsMenu(android.view.Menu)
      */
     @Override
@@ -370,7 +371,7 @@ public class TimerMainActivity extends Activity
             return;
         }
     }
-    
+
     /**
      * Set the menu items and widgets for start state.
      */
@@ -388,7 +389,7 @@ public class TimerMainActivity extends Activity
         m_stopButton.setVisibility(Button.VISIBLE);
         m_pauseButton.setVisibility(Button.VISIBLE);
         m_resumeButton.setVisibility(Button.GONE);
-        
+
     }
 
     /**
@@ -423,7 +424,7 @@ public class TimerMainActivity extends Activity
             m_pauseMenuItem.setVisible(true);
             m_resumeMenuItem.setVisible(false);
         }
- 
+
         m_startButton.setVisibility(Button.GONE);
         m_stopButton.setVisibility(Button.VISIBLE);
         m_pauseButton.setVisibility(Button.VISIBLE);
@@ -449,7 +450,7 @@ public class TimerMainActivity extends Activity
         m_pauseButton.setVisibility(Button.GONE);
         m_resumeButton.setVisibility(Button.GONE);
      }
-    
+
     /**
      * Set the menu items and widgets according to the current state.
      */
@@ -518,7 +519,7 @@ public class TimerMainActivity extends Activity
         Intent intent = new Intent(this, SettingsActivity.class);
         startActivity(intent);
     }
-    
+
     /**
      * A timer tick event.
      */
@@ -557,7 +558,7 @@ public class TimerMainActivity extends Activity
         setWidgetsForStopState();
         updateScreenForState();
     }
-    
+
    /**
      * Start the next interval.
      */
@@ -568,7 +569,7 @@ public class TimerMainActivity extends Activity
         updateScreenForState();
         startTimer(thisIntervalLength);
     }
-    
+
     /**
      * Start the timer, also displaying the number of seconds in the chronometer
      * view.
@@ -583,9 +584,9 @@ public class TimerMainActivity extends Activity
 
     /**
      * Helper method: get a string preference, identified by it's key string ID.
-     * 
+     *
      * @param keyStrId The resource ID of the string identifying the key.
-     * @param defValueResId The resource ID of the string specifying the 
+     * @param defValueResId The resource ID of the string specifying the
      * default value.
      */
     private String getStrPrefByKeyID(int keyStrId, int defValueResId)
@@ -605,10 +606,10 @@ public class TimerMainActivity extends Activity
      * Helper method: get an int preference (cast from a string), identified by
      * it's key string ID. If the preference was not set, return the default
      * value string, cast to integer, instead.
-     * 
+     *
      * @param keyStrId The resource ID of the string identifying the preference
      * key.
-     * @param defValueResId The resource ID of the string specifying the 
+     * @param defValueResId The resource ID of the string specifying the
      * default value (and NOT the default value itself!!!).
      */
     private int getIntPrefByKeyID(int keyStrId, int defValueResId)
