@@ -200,6 +200,7 @@ public class TimerMainActivity extends Activity
         updatePrefs();
         updateScreenForState();
         m_currentInterval = 0;
+        setVolumeControlStream(AudioManager.STREAM_NOTIFICATION);
     }
 
     /**
@@ -275,7 +276,7 @@ public class TimerMainActivity extends Activity
             m_ringtone = RingtoneManager.getRingtone(this, notificationURI);
         }
 
-        m_ringtone.setStreamType(AudioManager.STREAM_ALARM);
+        m_ringtone.setStreamType(AudioManager.STREAM_NOTIFICATION);
 
         m_preventLocking =
             prefs.getBoolean(getString(R.string.pref_nolock_key), false);
@@ -563,6 +564,7 @@ public class TimerMainActivity extends Activity
      */
     protected void onIntervalFinished()
     {
+        
         m_ringtone.play();
         m_timer.stop();
         m_currentInterval++;
