@@ -36,9 +36,8 @@ import android.util.Log;
  * to a single second, so if paused and resumed, will round down to the last
  * second ticked. E.g, if a timer 3 second timer is paused after 1.5 seconds,
  * it will still tick 2 seconds when resumed.
- * Because I'm lazy, the counter will work with a specific interval timer
- * activity, and not using a listener. This can be easily changed if this
- * class will be used for anything else.
+ * Clock resolution is defined by TICKS_PER_SECOND, and the timer will send
+ * roughly that number of ticks per second, all with the same seconds value.
  *
  * @author dedi
  */
@@ -51,7 +50,13 @@ public class PausableTimer
     /**
      * Milliseconds in a second.
      */
-    private final static long MILLIS_IN_SECOND = 1000L;
+    private final static int MILLIS_IN_SECOND = 1000;
+
+    /**
+     * Number of ticks per second. Higher value means more acuracy,
+     * but higher CPU usage.
+     */
+    private final static int TICKS_PER_SECOND = 20;
 
 
     //
@@ -61,7 +66,7 @@ public class PausableTimer
     /**
      * Our listener object.
      */
-    private TimerMainActivity m_listener;
+    private PausableTimerListener m_listener;
 
     /**
      * The actual countdown timer object. Will be null if the timer is currently
@@ -82,7 +87,7 @@ public class PausableTimer
     /**
      * Create a new pausable timer, associated with the given listener.
      */
-    public PausableTimer(TimerMainActivity listener)
+    public PausableTimer(PausableTimerListener listener)
     {
         m_listener = listener;
     }
@@ -101,15 +106,14 @@ public class PausableTimer
             m_countdownTimer = null;
         }
         m_secondsRemaining = seconds;
+        long countdownInterval = MILLIS_IN_SECOND / TICKS_PER_SECOND;
         m_countdownTimer =
-            new CountDownTimer(seconds * MILLIS_IN_SECOND, MILLIS_IN_SECOND) {
+            new CountDownTimer(seconds * MILLIS_IN_SECOND, countdownInterval) {
 
             @Override
             public void onTick(long millisUntilFinished)
             {
-                int secondsRemaining =
-                    (int)(millisUntilFinished / MILLIS_IN_SECOND);
-                PausableTimer.this.onTick(secondsRemaining);
+                PausableTimer.this.onTick(millisUntilFinished);
             }
 
             @Override
@@ -157,10 +161,15 @@ public class PausableTimer
      *
      * @param secondsRemaining
      */
-    protected void onTick(int secondsRemaining)
+    protected void onTick(long millisUntilFinished)
     {
-        m_secondsRemaining = secondsRemaining;
-        m_listener.onTimerTick(secondsRemaining);
+        Log.d(this.getClass().toString(), "onTick: " +  millisUntilFinished);
+        // Round down if we're less than half a tick above the second,
+        // round up otherwise.
+        int halfInterval = (MILLIS_IN_SECOND / TICKS_PER_SECOND) / 2;
+        m_secondsRemaining = (((int)millisUntilFinished + MILLIS_IN_SECOND -
+                               halfInterval) / MILLIS_IN_SECOND);
+        m_listener.onTimerTick(m_secondsRemaining);
     }
 
     /**
@@ -168,6 +177,7 @@ public class PausableTimer
      */
     protected void onFinish()
     {
+        Log.d(this.getClass().toString(), "onFinish()");
         m_secondsRemaining = 0;
         m_countdownTimer = null;
         m_listener.onIntervalFinished();

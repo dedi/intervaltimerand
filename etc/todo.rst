@@ -3,7 +3,6 @@ Bugs And TODO for interval timer.
 
 Bugs:
 -----
-* '0' missing from counter
 
 
 

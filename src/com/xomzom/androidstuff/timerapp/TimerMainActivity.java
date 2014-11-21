@@ -54,7 +54,7 @@ import android.widget.TextView;
  * @author dedi
  */
 public class TimerMainActivity extends Activity
-    implements OnSharedPreferenceChangeListener
+    implements OnSharedPreferenceChangeListener, PausableTimerListener
 {
     //
     // Constants.
@@ -562,11 +562,12 @@ public class TimerMainActivity extends Activity
     /**
      * An interval has finished.
      */
-    protected void onIntervalFinished()
+    public void onIntervalFinished()
     {
         
         m_ringtone.play();
         m_timer.stop();
+        onTimerTick(0);
         m_currentInterval++;
         if (m_currentInterval <= m_numIntervals)
             startNextInterval();

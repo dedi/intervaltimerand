@@ -9,6 +9,7 @@ New Features:
 Fixed bugs:
 -----------
 * Changed notification volume to use notification stream
+* Made clock count from n to 1 (instead of n-1 to 0), and finish with 0
 
 
 
