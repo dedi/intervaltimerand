@@ -5,6 +5,8 @@ Version 0.83
 New Features:
 -------------
 * Large countdown fonts, and tweaked look. 
+* Made 'prevent screen lock' the default, since that's usually what
+  you want.
 
 Fixed bugs:
 -----------

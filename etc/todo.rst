@@ -15,3 +15,6 @@ Todo:
 * Presets.
 * Clean the app look.
 * Allow branding.
+* Make menu button go directly to preferences.
+* Presets
+* Multiple sequences
